@@ -11,11 +11,13 @@
 /*
 Быстрая адаптация под 2016 год.
 
-gcc -O2 -g -lm -funsigned-char fe.c -o fe
-iconv -f utf-8 -t cp866 file.txt -o file.866.txt
-./fe -a file.866.txt
-iconv -f cp866 -t utf-8 fresheye.log -o fresheye2.log
-cat fresheye2.log
+Build:
+  gcc -O2 -g -lm -funsigned-char fe.c -o fe
+Use:
+  iconv -f utf-8 -t cp866 file.txt -o file.866.txt
+  ./fe -a file.866.txt file.866.log
+  iconv -f cp866 -t utf-8 file.866.log -o file.log
+  cat file.log
 */
 
 
@@ -190,8 +192,8 @@ int new_sentence = 1,              /* used to catch proper names */
     Clears keyboard buffer.
 */
 
-void kbcl (void) {
-
+void kbcl (void)
+{
 }
 
 /* ----------------------------------------------------- */
@@ -202,8 +204,8 @@ void kbcl (void) {
         <ctype.h>
 */
 
-int whatkey (void) {
-
+int whatkey (void)
+{
   register char c;
 
   kbcl ();
@@ -226,13 +228,12 @@ int whatkey (void) {
 
 /* ----------------------------------------------------- */
 
-int ask (const char *string) {
-
+int ask (const char *string)
+{
   if (string)
     printf ("%s", string);
   printf ("? (y/n/all) ");
   return (whatkey ());
-
 }
 
 /* ------------------------------------------------------ */
@@ -246,36 +247,35 @@ int ask (const char *string) {
       <dos.h>
 */
 
-int esc_pressed (void) {
-
+int esc_pressed (void)
+{
 /*  if (bioskey (1) == -1)
     return (1);
 */
-
   return (0);
 }
 
 /* ------------------------------------------------------ */
 
-short isletter (char *c) {
-
- switch (code) {
-        /* the rudiment of the epoch of many cyrillic code tables */
-   case 0:
-        /* alternative */
-     return ((*c > 127 && *c < 176) || (*c > 223 && *c < 240));
-   case 1:
-     return (*c > 175 && *c < 240);
-   case 2:
-     return (*c > 127 && *c < 192);
- }
- return (0);
+short isletter (char *c)
+{
+  switch (code)
+  { /* the rudiment of the epoch of many cyrillic code tables */
+    case 0:
+    /* alternative */
+      return ((*c > 127 && *c < 176) || (*c > 223 && *c < 240));
+    case 1:
+      return (*c > 175 && *c < 240);
+    case 2:
+      return (*c > 127 && *c < 192);
+  }
+  return (0);
 }
 
 /* ------------------------------------------------------ */
 
-short iscap (char *c) {
-
+short iscap (char *c)
+{
   if (code == 0 || code == 2)
     return (*c > 127 && *c < 160);
   return (*c > 175 && *c < 208);
@@ -283,15 +283,15 @@ short iscap (char *c) {
 
 /* ------------------------------------------------------ */
 
-short islow (char *c) {
-
+short islow (char *c)
+{
   return (isletter (c) && !iscap (c));
 }
 
 /* ------------------------------------------------------ */
 
-void upc (char *c) {
-
+void upc (char *c)
+{
   if (!islow (c))
     return;
   if (code || *c < 176)
@@ -302,8 +302,8 @@ void upc (char *c) {
 
 /* ------------------------------------------------------ */
 
-void  downc (char *c) {
-
+void  downc (char *c)
+{
   if (!iscap (c))
     return;
   if (code || *c < 144)
@@ -314,8 +314,8 @@ void  downc (char *c) {
 
 /* ------------------------------------------------------ */
 
-void toggle (char *c) {
-
+void toggle (char *c)
+{
   if (iscap (c))
     downc (c);
   else
@@ -324,8 +324,8 @@ void toggle (char *c) {
 
 /* ------------------------------------------------------ */
 
-short letters (char *s, char l) {
-
+short letters (char *s, char l)
+{
   while (l --)
     if (!isletter (s + l))
       return (0);
@@ -334,27 +334,32 @@ short letters (char *s, char l) {
 
 /* ------------------------------------------------------ */
 
-char *fgs (char *p, FILE *fp) {
-
+char *fgs (char *p, FILE *fp)
+{
   char *c;
-  int el = 0;  /* end of line */
+  int el = 0; /* end of line */
 
-  if ((wordmode && !readlog) ? fgets (p, wordwrap, fp) : fgets (p, 255, fp)) {
+  if ((wordmode && !readlog) ? fgets (p, wordwrap, fp) : fgets (p, 255, fp))
+  {
     c = p + strlen (p) - 1;
-    while (*c == '\n' || *c == '\r') {
+    while (*c == '\n' || *c == '\r')
+    {
       *c -- = 0;
       el = 1;
     }
-    if (wordmode && !readlog && !el && strlen (p) == wordwrap - 1) {  /* cutting long lines in word mode */
+    if (wordmode && !readlog && !el && strlen (p) == wordwrap - 1)
+    { /* cutting long lines in word mode */
       for (el = 0;
            *(c - el) != ' ' && *(c - el) != '\t' && (c - el) >= p;
            el ++);
-      if (el < wordwrap - 1) {
+      if (el < wordwrap - 1)
+      {
         *(c - el + 1) = 0;
         fseek (fp, (long) -el, SEEK_CUR);
       }
     }
-    if (wordmode) {
+    if (wordmode)
+    {
       while (c = strchr (p, 0x1f)) /* deleting optional hyphen chars */
         strcpy (c, c + 1);
       if (*p == '.')
@@ -362,13 +367,14 @@ char *fgs (char *p, FILE *fp) {
           strcpy (p, c + 1);
     }
     return (p);
-  } return (NULL);
+  }
+  return (NULL);
 }
 
 /* ------------------------------------------------------ */
 
-char *move (void) {
-
+char *move (void)
+{
   int t;
 
   for (t = 0; t < LINES - 1; t ++)
@@ -377,10 +383,12 @@ char *move (void) {
 
   if (forw == 2)
     return (NULL);        /* eof */
-  if (forw) {
+  if (forw)
+  {
     strcpy (s, sforw);    /* use stored string */
     forw = 0;
-  } else
+  }
+  else
     if (!fgs (s, f))      /* read string */
       return (NULL);      /* eof */
 
@@ -391,7 +399,8 @@ char *move (void) {
 
 /* ------------------------------------------------------ */
 
-void unify_word (char *a) {
+void unify_word (char *a)
+{
   assert(a);
 
   char *p = a + strlen (a) - 1;
@@ -408,8 +417,8 @@ void unify_word (char *a) {
 
 /* ------------------------------------------------------ */
 
-int raz (char *p) {
-
+int raz (char *p)
+{
   int res = 0;
 
   if (quiet) return (0);
@@ -418,7 +427,8 @@ int raz (char *p) {
 
   switch (*p) {
     case ' ':
-      if (!spaces) {
+      if (!spaces)
+      {
         res ++;
         spaces = 1;
       }
@@ -465,9 +475,10 @@ int raz (char *p) {
     case '^':
       break;
     default:
-      if (!spaces) {
+      if (!spaces)
+      {
         res ++;
-    spaces = 1;
+        spaces = 1;
       }
       break;
   }
@@ -476,8 +487,8 @@ int raz (char *p) {
 
 /* ------------------------------------------------------ */
 
-char *nextword (void) {
-
+char *nextword (void)
+{
   register char *p = wrd;
   int newline = 0;
   int par = 0;
@@ -487,7 +498,8 @@ char *nextword (void) {
   while (! isletter (sp) && *sp)
     ra += raz (sp ++);
 
-  while (sp >= s + strlen (s)) {
+  while (sp >= s + strlen (s))
+  {
     if (! move ())
       return (NULL);
     if (!newline)
@@ -518,7 +530,8 @@ char *nextword (void) {
   unify_word (wrd);
   razd [width - 1] = ra;
   wcnt ++;
-  if (!quiet) {
+  if (!quiet)
+  {
     printf ("Слово %u  ", wcnt);
     if (flush)
       printf (" Срабатываний %u\n", cries);
@@ -550,7 +563,8 @@ short wordcmp (const char *w1) {
   if ((abs(l1 - l2)) > 2)
     return (0);
 
-  if (min(l1, l2) <= 2) {
+  if (min(l1, l2) <= 2)
+  {
     if (strcmp (w1, wpoint) == 0)
       return (1);
     else
@@ -573,8 +587,8 @@ short wordcmp (const char *w1) {
 
 /* ------------------------------------------------------ */
 
-int comp (const void *w1, const void *w2) {
-
+int comp (const void *w1, const void *w2)
+{
   register cp *ww1 = (cp *) w1, *ww2 = (cp *) w2;
 
   if ((ww1 -> co) > (ww2 -> co))
@@ -590,8 +604,8 @@ int comp (const void *w1, const void *w2) {
 
 /* ------------------------------------------------------ */
 
-int icomp (int *i1, int *i2) {
-
+int icomp (int *i1, int *i2)
+{
   if (*i1 > *i2)
     return (-1);
   if (*i1 < *i2)
@@ -601,8 +615,8 @@ int icomp (int *i1, int *i2) {
 
 /* ------------------------------------------------------ */
 
-int checkvoc (char *w1, char *w2) {
-
+int checkvoc (char *w1, char *w2)
+{
   register int t;
 
   for (t = 0; t < VOCSIZE; t ++)
@@ -614,17 +628,16 @@ int checkvoc (char *w1, char *w2) {
 
 /* ------------------------------------------------------ */
 
-int simch (char *a, char *b) {    /* accessing the table */
-
+int simch (char *a, char *b)
+{ /* accessing the table */
    return (sim_ch [lnum (a)] [lnum (b)]);
-
 }
 
 /* ------------------------------------------------------ */
 
 #if 0
-int comppart (char *a, char *b) {  /* similarity of word fragments */
-
+int comppart (char *a, char *b)
+{ /* similarity of word fragments */
   register int res = 0;
 
   while (*a != 0)
@@ -636,55 +649,60 @@ int comppart (char *a, char *b) {  /* similarity of word fragments */
 
 /* ------------------------------------------------------ */
 
-int implen (int x) { /* psych. importance of the word x ch. long */
-                     /* big for small words, then slowly lagging
-                        behind the real length */
-
+int implen (int x)
+{ /* psych. importance of the word x ch. long */
+  /* big for small words, then slowly lagging
+     behind the real length */
   if (x == 2) return (5);
   return (x - sqr ((x - 1) / 6) + (int) (4.1 / (float) x));
-
 }
 
 /* ------------------------------------------------------ */
 
-int infor (char *a, char *b) {   /* calculates quantity of information */
-
+int infor (char *a, char *b)
+{ /* calculates quantity of information */
   int count = 0;
   int res = 0;
   int beg = 1;
   char *p, *pp = a;
 
-  while (*pp) {                      /* bipresent letters - add */
-    if (p = strchr (b, *pp)) {
+  while (*pp)
+  { /* bipresent letters - add */
+    if (p = strchr (b, *pp))
+    {
       if (beg && (p == b))
-    res += inf_letters [lnum (pp)] [1];
+        res += inf_letters [lnum (pp)] [1];
       else
-    res += inf_letters [lnum (pp)] [0];
+        res += inf_letters [lnum (pp)] [0];
       count ++;
     }
     beg = 0;
     pp ++;
   }
 
-  pp = a;                     /* letters in a only - subtract */
-  while (*pp) {
-    if (!(p = strchr (b, *pp))) {
+  pp = a; /* letters in a only - subtract */
+  while (*pp)
+  {
+    if (!(p = strchr (b, *pp)))
+    {
       if (pp == a)
-    res += 2000 - inf_letters [lnum (pp)] [1];
+        res += 2000 - inf_letters [lnum (pp)] [1];
       else
-    res += 2000 - inf_letters [lnum (pp)] [0];
+        res += 2000 - inf_letters [lnum (pp)] [0];
       count ++;
     }
     pp ++;
   }
 
-  pp = b;                     /* letters in b only - subtract */
-  while (*pp) {
-    if (!(p = strchr (a, *pp))) {
+  pp = b; /* letters in b only - subtract */
+  while (*pp)
+  {
+    if (!(p = strchr (a, *pp)))
+    {
       if (pp == b)
-    res += 2000 - inf_letters [lnum (pp)] [1];
+        res += 2000 - inf_letters [lnum (pp)] [1];
       else
-    res += 2000 - inf_letters [lnum (pp)] [0];
+        res += 2000 - inf_letters [lnum (pp)] [0];
       count ++;
     }
     pp ++;
@@ -698,7 +716,8 @@ int infor (char *a, char *b) {   /* calculates quantity of information */
 
 /* ------------------------------------------------------ */
 
-int simwords (char *a, char *b) {  /* yields similarity of words */
+int simwords (char *a, char *b)
+{ /* yields similarity of words */
 
   register char *tx, *ty, *ta, *tb;
   char parta [64] = {0};
@@ -713,38 +732,36 @@ int simwords (char *a, char *b) {  /* yields similarity of words */
   if (checkvoc (a, b)) /* an exception? */
     return (0);
 
-  if (strlen (a) > strlen (b)) {
-                       /* a must be always the shortest */
+  if (strlen (a) > strlen (b))
+  { /* a must be always the shortest */
    ta = a;
     a = b;
     b = ta;
-    rever = 1;         /* set the reverse position flag */
+    rever = 1; /* set the reverse position flag */
   }
-  lena = strlen (a);   /* remember lengths to speed up calculations */
+  lena = strlen (a); /* remember lengths to speed up calculations */
   lenb = strlen (b);
 
-  for (partlen = 1;  partlen <= lena;  partlen ++, resa = 0) {
-                       /* compare fragments from 1 to strlen(a) ch. long */
-    for (ta = a;  (lena - (int) (ta - a)) >= partlen;  ta ++) {
-
+  for (partlen = 1;  partlen <= lena;  partlen ++, resa = 0)
+  { /* compare fragments from 1 to strlen(a) ch. long */
+    for (ta = a;  (lena - (int) (ta - a)) >= partlen;  ta ++)
+    {
       strncpy (parta, ta, partlen);
-      for (tb = b;  partlen <= (lenb - (int) (tb - b));  tb ++) {
-
+      for (tb = b;  partlen <= (lenb - (int) (tb - b));  tb ++)
+      {
 /*        if ((prir = comppart (parta, tb)) == 0)
           continue;  */    /* comppart fetched here to speed up */
-
-        for (prir = 0, tx = parta, ty = tb; *tx != 0; tx ++, ty ++) {
-                     /* this loop seems to be the most critical
-                        part of the whole algorithm */
+        for (prir = 0, tx = parta, ty = tb; *tx != 0; tx ++, ty ++)
+        { /* this loop seems to be the most critical part of the whole algorithm */
 #if 0
           tmp = sim_ch [lnum (tx)] [lnum (ty)];
-                     /* accessing the table */
+          /* accessing the table */
           prir += tmp * tmp;
           if (tmp == 2) prir --; /* experiment! */
-                     /* squaring values to sharpen similarity */
+          /* squaring values to sharpen similarity */
 #endif
           prir += sim_ch [lnum (tx)] [lnum (ty)];
-                     /* accessing the table */
+          /* accessing the table */
         }
 
         if (prir == 0) continue;
@@ -753,78 +770,79 @@ int simwords (char *a, char *b) {  /* yields similarity of words */
           prir -= (prir * (ta - a)) / (3 * lena);
         if (tb > b)
           prir -= (prir * (tb - b)) / (3 * lenb);
-                     /* decreasing value towards the word end */
+        /* decreasing value towards the word end */
 
         if ((dist = (rever) ? (lenb - (tb - b + partlen)) + (ta - a)
                             : (lena - (ta - a + partlen)) + (tb - b)
             ) < 3)
           prir += ((prir * (2 - dist)) / 3);
-                     /* dist is the shortest distance between the fragments
-                        supposing the words are adjacent */
+        /* dist is the shortest distance between the fragments
+           supposing the words are adjacent */
 
         if (prir > resa)
-      resa = prir;
-                     /* resa accumulates the greatest value */
+          resa = prir;
+        /* resa accumulates the greatest value */
       }
     }
-    if (resa / partlen > 6) {
-                     /* is the density more than some threshold? */
+    if (resa / partlen > 6)
+    { /* is the density more than some threshold? */
       prir = resa;
       dist = 3 * (lena + lenb) / 8 + 1;
-                     /* here dist is 3/4 of average length of the words */
+      /* here dist is 3/4 of average length of the words */
 /*      res += resa + prir * (partlen - dist / 2) / (2 * dist);  */
       res += resa + prir * (partlen - min(dist, lena)) / (2 * dist);
-                     /* sharpening the dependance on the fragment length */
-
+      /* sharpening the dependance on the fragment length */
     }
   }
 
   for (partlen = 1, resa = 0;  partlen <= lena;  partlen ++)
     resa += 9 * partlen;
-              /* now resa is the maximal value that res could have for
+  /* now resa is the maximal value that res could have for
                  the words of these lengths */
 
   res = ((res * infor (a, b)) / resa);
-              /* allowing for the info contained in the letters */
+  /* allowing for the info contained in the letters */
   res -= (res * (lenb - lena)) / (2 * lenb);
-              /* decreasing if words are too different in length */
+  /* decreasing if words are too different in length */
   return (res * strlen (a) * strlen (b) / (implen (strlen (a)) * implen (strlen (b))));
-              /* finally, taking into account the psychological length */
-
+  /* finally, taking into account the psychological length */
 }
 
 /* ------------------------------------------------------ */
 
-int show (int num, int bad, int sim, int dist) {
-
+int show (int num, int bad, int sim, int dist)
+{
   int t = LINES;
-  int inw,   /* "inside a word" flag */
+  int inw, /* "inside a word" flag */
       nnum,
-      otw;   /* to keep the user's responce */
-  char *st1, *wr1;  /* string and word to show, first */
-  char *st2, *wr2;  /* string and word to show, second */
+      otw; /* to keep the user's responce */
+  char *st1, *wr1; /* string and word to show, first */
+  char *st2, *wr2; /* string and word to show, second */
   char *point;
 
   st2 = s;
   for (wr2 = sp - 1; isletter (wr2) && (wr2 >= st2); wr2 --);  wr2 ++;
-    /* rewind st2 to the beginning of current line */
+  /* rewind st2 to the beginning of current line */
 
   st1 = st2;
   wr1 = wr2;
   inw = 0;
 
   nnum = num = width + 1 - num;
-  while (num > 1) {
+  while (num > 1)
+  {
     wr1 --;
-    if (wr1 < st1) {
-      if (inw) {
+    if (wr1 < st1)
+    {
+      if (inw)
+      {
         inw = 0;
         num --;
         continue;
       }
       st1 = sprevs [-- t];
       if (t < 0)
-    return (0);
+        return (0);
       wr1 = st1 + strlen (st1) - 1;
       if (isletter (wr1))
         inw = 1;
@@ -832,9 +850,10 @@ int show (int num, int bad, int sim, int dist) {
         inw = 0;
     }
     if (!isletter (wr1))
-      if (inw) {
+      if (inw)
+      {
         inw = 0;
-    num --;
+        num --;
       }
     if (isletter (wr1))
       if (!inw)
@@ -842,65 +861,72 @@ int show (int num, int bad, int sim, int dist) {
   }
   wr1 ++;
 
-  if ((glpar) && (glpar + 1 <= nnum)) {
-                        /* there's a \par between the words */
+  if ((glpar) && (glpar + 1 <= nnum))
+  { /* there's a \par between the words */
     if ((t > 0) && (*sprevs [t - 1] == 0))
-                        /* \par comes before the first word */
+      /* \par comes before the first word */
       return (0);
     if (!forw)
-      if (!fgs (sforw, f))   /* read ahead */
-    forw = 2;         /* end of file encountered */
+      if (!fgs (sforw, f)) /* read ahead */
+        forw = 2; /* end of file encountered */
       else
-    forw = 1;
+        forw = 1;
 
-    if (forw != 2) {
+    if (forw != 2)
       if (*sforw == 0) /* \par comes after the second word */
-    return (0);
-    }
+        return (0);
   }
 
   cries ++;
-  if (flush) goto logging;  /* skip screen stuffing */
-  if (st1 == st2) {         /* pendant le meme ligne */
-    printf ("\r");
-    for (point = st1; point < wr1; point ++)
-      (*point == '\t') ? printf ("\t") : putc (*point, stdout);
-    for (; isletter (point); point ++)
-      printf ("%c", *point);
-    for (; point < wr2; point ++)
-      (*point == '\t') ? printf ("\t") : putc (*point, stdout);
-    for (; isletter (point); point ++)
-      putc (*point, stdout);
-    for (; *point; point ++)
-      (*point == '\t') ? printf ("\t") : putc (*point, stdout);
-  } else {                  /* deux lignes differents */
-    printf ("\r");
-    for (point = st1; point < wr1; point ++)
-      (*point == '\t') ? printf ("\t") : putc (*point, stdout);
-    for (; isletter (point); point ++)
-      putc (*point, stdout);
-    for (; *point; point ++)
-      (*point == '\t') ? printf ("\t") : putc (*point, stdout);
+  if (flush)
+    otw = 3;
+  else
+  {
+    if (st1 == st2)
+    {         /* pendant le meme ligne */
+      printf ("\r");
+      for (point = st1; point < wr1; point ++)
+        (*point == '\t') ? printf ("\t") : putc (*point, stdout);
+      for (; isletter (point); point ++)
+        printf ("%c", *point);
+      for (; point < wr2; point ++)
+        (*point == '\t') ? printf ("\t") : putc (*point, stdout);
+      for (; isletter (point); point ++)
+        putc (*point, stdout);
+      for (; *point; point ++)
+        (*point == '\t') ? printf ("\t") : putc (*point, stdout);
+    }
+    else
+    {                  /* deux lignes differents */
+      printf ("\r");
+      for (point = st1; point < wr1; point ++)
+        (*point == '\t') ? printf ("\t") : putc (*point, stdout);
+      for (; isletter (point); point ++)
+        putc (*point, stdout);
+      for (; *point; point ++)
+        (*point == '\t') ? printf ("\t") : putc (*point, stdout);
 
-    printf ("\r\n");
-    inw = t + 1;
-    while (inw <= LINES - 1) {
-      printf ("%s\r\n", sprevs [inw ++]);
+      printf ("\r\n");
+      inw = t + 1;
+      while (inw <= LINES - 1)
+        printf ("%s\r\n", sprevs [inw ++]);
+
+      for (point = st2; point < wr2; point ++)
+        (*point == '\t') ? printf ("\t") : putc (*point, stdout);
+      for (; isletter (point); point ++)
+        putc (*point, stdout);
+      for (; *point; point ++)
+        (*point == '\t') ? printf ("\t") : putc (*point, stdout);
     }
 
-    for (point = st2; point < wr2; point ++)
-      (*point == '\t') ? printf ("\t") : putc (*point, stdout);
-    for (; isletter (point); point ++)
-      putc (*point, stdout);
-    for (; *point; point ++)
-      (*point == '\t') ? printf ("\t") : putc (*point, stdout);
+    printf ("\r\n                         line %u   sim = %u  dist = %u  badness = %u", lcnt, sim, dist, bad);
+    otw = ask ("\rЗапомнить");
   }
-
-  printf ("\r\n                         line %u   sim = %u  dist = %u  badness = %u", lcnt, sim, dist, bad);
-  if ((otw = ask ("\rЗапомнить")) == 1 || otw == 3) {
-logging:
+  if (otw == 1 || otw == 3)
+  {
     ogos ++;
-    if (st1 == st2) {
+    if (st1 == st2)
+    {
       fprintf (fo, "\r\n%s\r\n", st1);
       for (point = st1; point < wr1; point ++)
         if (*point != '\t')
@@ -916,7 +942,9 @@ logging:
           fprintf (fo, "\t");
       for (; isletter (point); point ++)
         fprintf (fo, "^");
-    } else {
+    }
+    else
+    {
       fprintf (fo, "\r\n%s\r\n", st1);
       for (point = st1; point < wr1; point ++)
         if (*point != '\t')
@@ -939,8 +967,9 @@ logging:
         fprintf (fo, "^");
     }
     fprintf (fo, "\r\n                        line %u   sim = %u  dist = %u  badness = %u\r\n", lcnt, sim, dist, bad);
-    if (flush) goto end;
-    if (otw == 3) {
+    if (flush) return (0);
+    if (otw == 3)
+    {
       flush = 1;
       putc ('A', stdout);
     } else {
@@ -948,13 +977,13 @@ logging:
     }
   }
   else
-    if (otw == 0) {
+    if (otw == 0)
+    {
       putc ('N', stdout);
     } else
       return (1);
 
   printf ("\n\n");
-end:
   return (0);
 }
 
@@ -1133,11 +1162,13 @@ void cbrk_handler (int sig_type) {
 
 /* ------------------------------------------------------ */
 
-int wordcount (void) { /* compiling the wordcount */
+int wordcount (void)
+{ /* compiling the wordcount */
 
   char *w, *p;
   register unsigned int l, ll;
   double tmp;
+  int lr;
 
   register int l0, l1, l2;      /* temporals for fastening wordcmp */
 
@@ -1145,7 +1176,8 @@ int wordcount (void) { /* compiling the wordcount */
 
 /*  printf ("%lu", farcoreleft ()); */
 
-  if ((list = (char *) malloc (((unsigned long) MAXWLEN) * WS)) == NULL) {
+  if ((list = (char *) malloc (((unsigned long) MAXWLEN) * WS)) == NULL)
+  {
     puts ("!  Cannot allocate memory");
     exit (0);
   }
@@ -1161,14 +1193,14 @@ int wordcount (void) { /* compiling the wordcount */
 
   *s = 0;
   sp = s;
-  while (nextword ()) {
+  while (nextword ())
+  {
 
+    lr = 0;
     if (strlen (wrd) >= MAXWLEN)
       continue;
 
-    for (l = 0, ll = WS * MAXWLEN;
-         *(p = list + l) && l < ll;
-         l += MAXWLEN)
+    for (l = 0, ll = WS * MAXWLEN; *(p = list + l) && (l < ll) && (!lr); l += MAXWLEN)
     {
 /*    if (wordcmp (p))   */
             /* wordcmp fetched here to speed it up */
@@ -1177,61 +1209,63 @@ int wordcount (void) { /* compiling the wordcount */
 
 /* short wordcmp (const char *w1) {  */
 
-      if (*p != *wpoint)
-        continue;                    /* return (0); */
+      if (*p == *wpoint)
+      {
+        l0 = 0;
+        l1 = strlen (p);
+        l2 = strlen (wpoint);
 
-      l0 = 0;
-      l1 = strlen (p);
-      l2 = strlen (wpoint);
+        if ((abs(l1 - l2)) < 3)
+        {
+          if (min(l1, l2) > 2)
+          {
+            while (*(p + l0) && *(wpoint + l0) && (*(p + l0) == *(wpoint + l0)))
+              l0 ++;                       /* twist forward while the words do coincide */
 
-      if ((abs(l1 - l2)) > 2)
-        continue;                    /* return (0); */
-
-      if (min(l1, l2) <= 2)
-        if (strcmp (p, wpoint) == 0)
-          goto yes;                  /* return (1); */
-        else
-          continue;                  /* return (0); */
-
-      while (*(p + l0) && *(wpoint + l0) && (*(p + l0) == *(wpoint + l0)))
-        l0 ++;                       /* twist forward while the words do coincide */
-
-      if (abs (l1 - l2) == 2 || (abs (l1 - l2) == 1 && min(l1, l2) <= 3))
-        if (*(p + l0) != 0 && *(wpoint + l0) != 0)
-          continue;                  /* return (0); */
-
-      if (l0 <= (min(l1, l2) / 2))
-        continue;                    /* return (0); */
-
+            if (((abs (l1 - l2) == 2 || (abs (l1 - l2) == 1 && min(l1, l2) <= 3)) && (*(p + l0) != 0 && *(wpoint + l0) != 0)) || (l0 <= (min(l1, l2) / 2)))
+              continue;                    /* return (0); */
+          }
+          else
+          {
+            if (strcmp (p, wpoint) != 0)
+              continue;                  /* return (0); */
+          }
 /* } */
 /* end of former wordcmp */
 
-yes:
-      i [l / MAXWLEN] ++;
+          i [l / MAXWLEN] ++;
 /*    strcpy (p, wrd);  */
-                    /* considered harmful :) */
-                    /* seriously, just unnecessary and time-consuming */
-      goto e;
+/* considered harmful :) */
+/* seriously, just unnecessary and time-consuming */
+          lr = 1;
+        }
+      }
     }
 
-    if (l >= ll) {
-      not_all_words_counted = 1;
+    if (!lr)
+    {
+      if (l >= ll)
+      {
+        not_all_words_counted = 1;
 /*    puts ("\rNo more memory."); */
-      break;
+        break;
+      }
+
+      strcpy (p, wrd);
+      i [l0 = l / MAXWLEN] = 1;    /* what a mess! sorry, "optimization"... */
+      wcsize = l0;
     }
 
-    strcpy (p, wrd);
-    i [l0 = l / MAXWLEN] = 1;    /* what a mess! sorry, "optimization"... */
-    wcsize = l0;
-
-e:  if (esc_pressed ()) {
+    if (esc_pressed ())
+    {
       lcnt = wcnt = 0;
       return (1);
     }
   }
 
   for (l = ll = 0; l <= wcsize; l ++) /* composing the list */
-    if (i [l] > 1) {                  /* criteria: occured twice or more */
+    if (i [l] > 1)
+    {                  /* criteria: occured twice or more */
       i1[ll].co = i [l];
       i1[ll].po = list + (unsigned) l * MAXWLEN;
       ll ++;
@@ -1243,14 +1277,16 @@ e:  if (esc_pressed ()) {
            /* at least compact model is assumed */
   printf ("Calculating...\n");
 
-  if (dumpcount) {
+  if (dumpcount)
+  {
     fprintf (fo, "=== WORDCOUNT\r\n");
     fprintf (fo, "=== Lines: %i %s\r\n=== Word occurrences: %i\r\n=== Words listed: %i\r\n",
       lcnt, not_all_words_counted ? "(could not process all of file)" : "", wcnt, wcsize);
-    for (l = 0; l < wcsize; l ++) {
+    for (l = 0; l < wcsize; l ++)
+    {
       fprintf (fo, "%s\t%s%s%i\r\n", i1[l].po,
         (strlen (i1[l].po) > 7) ? "" : "\t",
-    (strlen (i1[l].po) > 15) ? " " : "\t ",
+        (strlen (i1[l].po) > 15) ? " " : "\t ",
         i1[l].co);
     }
     fprintf (fo, "=== END WORDCOUNT\r\n\r\n");
@@ -1259,7 +1295,8 @@ e:  if (esc_pressed ()) {
   fseek (f, wordmode ? 0x80 : 0, SEEK_SET);
   new_sentence = 1;
 
-  for (l = 0; l < wcsize; l ++) {
+  for (l = 0; l < wcsize; l ++)
+  {
                /* recalculating the vocabulary */
     tmp = ((double) i1[l].co) / ((double) wcnt);
     i1[l].co = 1 - log (tmp) * 1000 / ((8.0 + ((float) usecount) / 13) * log (2));
@@ -1274,7 +1311,8 @@ e:  if (esc_pressed ()) {
 
   wcnt = lcnt = quiet = 0;   /* reset all counters */
   printf ("\r");
-  while (lcnt < fstr && !feof (f)) {
+  while (lcnt < fstr && !feof (f))
+  {
     fgs (s, f); lcnt ++;
   }
   return (0);
